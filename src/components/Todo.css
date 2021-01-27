@@ -38,3 +38,8 @@ li button {
     font-size: 18px;
     background: transparent;
 }
+
+.completed {
+    text-decoration: line-through;
+    color: rgb(151, 133, 133);
+}

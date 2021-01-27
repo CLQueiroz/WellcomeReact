@@ -1,37 +1,44 @@
-import React, {useState} from 'react';
+import React, { useCallback, useState } from 'react';
 import Header from './Header';
 import nextId from "react-id-generator";
 
 import './Todo.css'
 export default function Todo() {
-  const [value, setValue] = useState();
   const [task, setTask] = useState([]);
+  const [value, setValue] = useState('');
   
+  const clearInput = useCallback(() => {
+    setValue('');
+  }, [])
+
   function handleTask(e){
     e.preventDefault();
     const newTask = {
       id: nextId(),
       text: value,
-      completed: false 
+      completed: false
     }
-    if(newTask){
+    if(newTask.text) {
       setTask([...task, newTask]);
-    }else{
-      alert("Valor obrigatório");
     }
+    clearInput();
   }
 
   function deleteTask(id){
     setTask(task.filter(index => index.id !== id));
   }
 
-  function handleValues(e) {
-    const { name, value } = e.target;
-    if (value) {
-      setValue(value);
-      return;
-    }
+  function handleChcked(id){
+    const newTask = task.filter(item => item.id === id);
+    newTask[0].completed = !newTask[0].completed;
+    setTask([...task]);
   }
+
+  const handleValues = useCallback(e => {
+    const { value } = e.target;
+    if(!value) return;
+      setValue(value);
+   },[]) 
 
     return (
       <>
@@ -39,7 +46,7 @@ export default function Todo() {
         <div className="content"> 
           <form onSubmit={handleTask}>
             <input
-             autoComplete="off"
+              autoComplete="off"
               onChange={handleValues}
               name="task"
               type="text"
@@ -50,8 +57,13 @@ export default function Todo() {
             {
               task.map(item => (
                 <li key={item.id}>
-                  <input type="checkbox" name="" id=""/>
-                  {item.text}
+                  <input 
+                  defaultChecked={item.completed} 
+                  type="checkbox" 
+                  onClick={e => handleChcked(item.id) }/>
+                  <strong className={item.completed ? "completed" : ""}>
+                    {item.text}
+                  </strong>
                   <button title="deletar" onClick={ e => deleteTask(item.id)}>X</button>
                 </li>
               ))
