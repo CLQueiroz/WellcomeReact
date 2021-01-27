@@ -1,24 +1,28 @@
 import React, {useState} from 'react';
 import Header from './Header';
+import nextId from "react-id-generator";
 
 import './Todo.css'
 export default function Todo() {
   const [value, setValue] = useState();
   const [task, setTask] = useState([]);
   
-  
-
   function handleTask(e){
     e.preventDefault();
-    if(value){
-      setTask([...task, value]);
+    const newTask = {
+      id: nextId(),
+      text: value,
+      completed: false 
+    }
+    if(newTask){
+      setTask([...task, newTask]);
     }else{
       alert("Valor obrigatório");
     }
   }
 
-  function deleteTask(item){
-    setTask(task.filter(index => index !== item));
+  function deleteTask(id){
+    setTask(task.filter(index => index.id !== id));
   }
 
   function handleValues(e) {
@@ -45,9 +49,10 @@ export default function Todo() {
           <div className="itens">
             {
               task.map(item => (
-                <li key={item}>
-                  {item}
-                  <button title="deletar" onClick={ e => deleteTask(item)}>X</button>
+                <li key={item.id}>
+                  <input type="checkbox" name="" id=""/>
+                  {item.text}
+                  <button title="deletar" onClick={ e => deleteTask(item.id)}>X</button>
                 </li>
               ))
             }
