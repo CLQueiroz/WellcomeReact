@@ -46,6 +46,8 @@ export default function Todo() {
         <div className="content"> 
           <form onSubmit={handleTask}>
             <input
+              autoFocus
+              value={value}
               autoComplete="off"
               onChange={handleValues}
               name="task"
