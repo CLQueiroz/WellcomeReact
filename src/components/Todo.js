@@ -1,36 +1,30 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import Header from './Header';
 import nextId from "react-id-generator";
 
+import useLocalStorage from './hooks/useLocalStorage'
 import './Todo.css'
 export default function Todo() {
-  // const saveditems = localStorage.getItem('tasks');
-  // const [task, setTask] = useState(saveditems || []);
 
-  const [task, setTask] = useState([]);
+  const [task, setTask] = useLocalStorage('Tasks', []);
   const [value, setValue] = useState('');
-  
-  // useEffect(() => {
-  //   const newTasks = localStorage.setItem('tasks', JSON.stringify(task))
-  //   if(newTasks){
-  //     setTask([newTasks]);
-  //   }
-  // },[task])
+  const [filter, setFilter] = useState('all');
 
+  const filteredTodos = useMemo(() => {
+    if(filter === 'all'){
+      return task
+    }else if(filter === 'completed'){
+      return task.filter(item => item.completed)
+    }else if(filter === 'not_completed'){
+      return task.filter(item => !item.completed)
+    }
+  },[task, filter])
+  // clear input
   function clearInput(){
     setValue('');
   }
-
-  function handleTaskActive(){
-    console.log("clicked")
-  }
   
-  function handleTaskCompleted(){
-    // const newTask = task.filter(item => item.completed === true);
-    // setTask(newTask);
-    console.log("clicked")
-  }
-
+  // adiciona task ao array de task
   function handleTask(e){
     e.preventDefault();
     const newTask = {
@@ -44,16 +38,19 @@ export default function Todo() {
     clearInput();
   }
 
+  // deleta a task do array puxando pelo id
   function deleteTask(id){
     setTask(task.filter(index => index.id !== id));
   }
 
+  // adiciona o check ao completed da task
   function handleChcked(id){
     const newTask = task.filter(item => item.id === id);
     newTask[0].completed = !newTask[0].completed;
     setTask([...task]);
   }
 
+  // grava no value o valor digitado do input
   function handleValues (e) {
     const { value } = e.target;
     if(!value) return;
@@ -77,7 +74,7 @@ export default function Todo() {
           </form>
           <div className="itens">
             {
-              task.map(item => (
+              filteredTodos.map(item => (
                 <>
                   <li key={item.id}>
                     <input 
@@ -95,18 +92,20 @@ export default function Todo() {
               <hr />
               <div className="details">
                   <strong>
-                    Total: 
                     {
-                      task.length
+                      task.length > 0 && <span>Total {task.length}</span>
                     }
                   </strong>
                 <div className="details-nav">
-                  <button className="all">All</button>
                   <button 
-                    onClick={handleTaskCompleted}
+                    onClick={() => setFilter("all")}
+                    className="all"
+                  >All</button>
+                  <button 
+                    onClick={() => setFilter("completed")}
                     className="complete">Completed</button>
                   <button 
-                    onClick={handleTaskActive}
+                    onClick={() => setFilter("not_completed")}
                     className="active"
                   >Active</button>
                 </div>
