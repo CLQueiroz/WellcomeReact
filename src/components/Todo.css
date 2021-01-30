@@ -95,3 +95,8 @@ li button {
     transition: color 1s;
     transition: background-color 1s;
 }
+
+.details-nav .clear-all{
+    background-color: red;
+    color: #FFF;
+}

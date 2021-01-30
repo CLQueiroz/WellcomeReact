@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import Header from './Header';
 import nextId from "react-id-generator";
 
@@ -10,6 +10,9 @@ export default function Todo() {
   const [value, setValue] = useState('');
   const [filter, setFilter] = useState('all');
 
+  function clearAll(){
+    setTask([])
+  }
   const filteredTodos = useMemo(() => {
     if(filter === 'all'){
       return task
@@ -93,11 +96,11 @@ export default function Todo() {
               <div className="details">
                   <strong>
                     {
-                      task.length > 0 && <span>Total {task.length}</span>
+                      filteredTodos.length > 0 && <span>Total {filteredTodos.length}</span>
                     }
                   </strong>
                 <div className="details-nav">
-                  <button 
+                  <button
                     onClick={() => setFilter("all")}
                     className="all"
                   >All</button>
@@ -108,6 +111,13 @@ export default function Todo() {
                     onClick={() => setFilter("not_completed")}
                     className="active"
                   >Active</button>
+                   {
+                    filteredTodos.length > 0 && 
+                    <button 
+                      onClick={() => clearAll()}
+                      className="clear-all"
+                    >Clear ALL</button>
+                  }
                 </div>
               </div>
           </div>
