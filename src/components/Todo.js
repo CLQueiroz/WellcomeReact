@@ -10,7 +10,7 @@ import 'react-toastify/dist/ReactToastify.css';
 export default function Todo() {
 
   const [task, setTask] = useLocalStorage('Tasks', []);
-  const [value, setValue] = useState();
+  const [value, setValue] = useState("");
   const [filter, setFilter] = useState('all');
 
   const alertToastSuccess = (message) => {
@@ -54,8 +54,10 @@ export default function Todo() {
     if(newTask.text) {
       setTask([...task, newTask]);
       alertToastSuccess('Tarefa Inserida com sucesso !');
+      clearInput();
+    }else{
+      alertToastWarn("Task não preenchida! obrigatório")
     }
-    clearInput();
   }
 
   // deleta a task do array puxando pelo id
@@ -75,7 +77,6 @@ export default function Todo() {
 
   // adiciona o check ao completed da task
   function handleChcked(id){
-
     try {
       const newTask = task.filter(item => item.id === id);
       newTask[0].completed = !newTask[0].completed;
@@ -89,10 +90,8 @@ export default function Todo() {
   // grava no value o valor digitado do input
   function handleValues (e) {
     const { value } = e.target;
-    if(!value) return;
       setValue(value);
-   }
-
+  }
     return (
       <>
         <Header />
@@ -115,18 +114,18 @@ export default function Todo() {
           <div className="itens">
             {
               filteredTodos.map(item => (
-                <>
                   <li key={item.id}>
                     <input 
                     defaultChecked={item.completed} 
                     type="checkbox" 
                     onClick={e => handleChcked(item.id) }/>
-                    <strong className={item.completed ? "completed" : ""}>
+                    <strong 
+                      key={item.id}
+                      className={item.completed ? "completed" : ""}>
                       {item.text}
                     </strong>
                     <button title="deletar" onClick={ e => deleteTask(item.id)}>X</button>
                   </li>
-                </>
               ))
             }
               <hr />
