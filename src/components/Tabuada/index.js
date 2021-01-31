@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 
-import "../styles.css";
-import Header from "./Header";
+import "../../styles.css";
+import Header from "../Header";
 function Tabuada() {
   const [tab, setTabs] = useState([]);
   const [values, setValues] = useState();
