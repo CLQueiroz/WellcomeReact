@@ -27,7 +27,7 @@ export default function Todo() {
   }
 
   function clearAll() {
-    setTask([])
+   setTask([])
   }
   const filteredTodos = useMemo(() => {
     if (filter === 'all') {
@@ -53,10 +53,10 @@ export default function Todo() {
     }
     if (newTask.text) {
       setTask([...task, newTask]);
-      alertToastSuccess('Task Inserida com sucesso !');
+      alertToastSuccess('Task Inserida com sucesso!');
       clearInput();
     } else {
-      alertToastWarn("Task não preenchida! obrigatório")
+      alertToastWarn("Task não preenchida, obrigatório!")
     }
   }
 
@@ -65,10 +65,10 @@ export default function Todo() {
     try {
       let newTask = task.filter(index => index.id === id);
       if (newTask[0].completed === false) {
-        alertToastWarn("Task não pode ser deleta, ainda não foi finalizada");
+        alertToastWarn("Task não pode ser deleta, ainda não foi finalizada!");
       } else {
         setTask(task.filter(index => index.id !== id));
-        alertToastSuccess('Tarefa deletada com sucesso !');
+        alertToastSuccess('Task deletada com sucesso!');
       }
     } catch (error) {
       alertToastError(error)
@@ -81,7 +81,11 @@ export default function Todo() {
       const newTask = task.filter(item => item.id === id);
       newTask[0].completed = !newTask[0].completed;
       setTask([...task]);
-      alertToastInfo('Tarefa completa !')
+      if(newTask[0].completed){
+        alertToastSuccess('Task completa!')
+      }else{
+        alertToastInfo('Task Ativada!')
+      }
     } catch (error) {
       alertToastError(error)
     }
