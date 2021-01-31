@@ -1,14 +1,30 @@
 import React, { useState, useMemo } from 'react';
 import Header from './Header';
 import nextId from "react-id-generator";
+import { ToastContainer, toast } from 'react-toastify';
 
-import useLocalStorage from './hooks/useLocalStorage'
-import './Todo.css'
+
+import useLocalStorage from './hooks/useLocalStorage';
+import './Todo.css';
+import 'react-toastify/dist/ReactToastify.css';
 export default function Todo() {
 
   const [task, setTask] = useLocalStorage('Tasks', []);
-  const [value, setValue] = useState('');
+  const [value, setValue] = useState();
   const [filter, setFilter] = useState('all');
+
+  const alertToastSuccess = (message) => {
+    toast.success(message);
+  }
+  const alertToastWarn = (message) => {
+    toast.warn(message);
+  }
+  const alertToastError = (message) => {
+    toast.error(message)
+  }
+  const alertToastInfo = (message) => {
+    toast.info(message)
+  }
 
   function clearAll(){
     setTask([])
@@ -37,20 +53,37 @@ export default function Todo() {
     }
     if(newTask.text) {
       setTask([...task, newTask]);
+      alertToastSuccess('Tarefa Inserida com sucesso !');
     }
     clearInput();
   }
 
   // deleta a task do array puxando pelo id
   function deleteTask(id){
-    setTask(task.filter(index => index.id !== id));
+    try {
+      let newTask = task.filter(index => index.id === id);
+      if(newTask[0].completed === false){
+        alertToastWarn("Task não pode ser deleta, ainda não foi finalizada");
+      }else{
+        setTask(task.filter(index => index.id !== id));
+        alertToastSuccess('Tarefa deletada com sucesso !');      
+      }
+    } catch (error) {
+      alertToastError(error)
+    }
   }
 
   // adiciona o check ao completed da task
   function handleChcked(id){
-    const newTask = task.filter(item => item.id === id);
-    newTask[0].completed = !newTask[0].completed;
-    setTask([...task]);
+
+    try {
+      const newTask = task.filter(item => item.id === id);
+      newTask[0].completed = !newTask[0].completed;
+      setTask([...task]);
+      alertToastInfo('Tarefa completa !')
+    } catch (error) {
+      alertToastError(error)
+    }
   }
 
   // grava no value o valor digitado do input
@@ -63,6 +96,10 @@ export default function Todo() {
     return (
       <>
         <Header />
+        <ToastContainer 
+          autoClose={3000}
+          closeOnClick
+        />
         <div className="content"> 
           <form onSubmit={handleTask}>
             <input
