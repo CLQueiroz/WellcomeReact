@@ -53,10 +53,10 @@ export default function Todo() {
     }
     if (newTask.text) {
       setTask([...task, newTask]);
-      alertToastSuccess('Task Inserida com sucesso!');
+      alertToastSuccess('😀 Task Inserida com sucesso!');
       clearInput();
     } else {
-      alertToastWarn("Task não preenchida, obrigatório!")
+      alertToastWarn("✋ Task não preenchida, obrigatório!")
     }
   }
 
@@ -65,10 +65,10 @@ export default function Todo() {
     try {
       let newTask = task.filter(index => index.id === id);
       if (newTask[0].completed === false) {
-        alertToastWarn("Task não pode ser deleta, ainda não foi finalizada!");
+        alertToastWarn("😕 Task não pode ser deleta, ainda não foi finalizada!");
       } else {
         setTask(task.filter(index => index.id !== id));
-        alertToastSuccess('Task deletada com sucesso!');
+        alertToastSuccess('😀 Task deletada com sucesso!');
       }
     } catch (error) {
       alertToastError(error)
@@ -82,9 +82,9 @@ export default function Todo() {
       newTask[0].completed = !newTask[0].completed;
       setTask([...task]);
       if(newTask[0].completed){
-        alertToastSuccess('Task completa!')
+        alertToastSuccess('👍 Task completa!')
       }else{
-        alertToastInfo('Task Ativada!')
+        alertToastInfo('👍 Task Ativada!')
       }
     } catch (error) {
       alertToastError(error)
@@ -124,6 +124,7 @@ export default function Todo() {
                   type="checkbox"
                   onClick={e => handleChcked(item.id)} />
                 <strong
+                  onDoubleClick={() => console.log('Clicked')}
                   key={item.id}
                   className={item.completed ? "completed" : ""}>
                   {item.text}
