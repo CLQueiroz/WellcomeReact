@@ -1,8 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Header from '../Header';
-import nextId from "react-id-generator";
-import { ToastContainer, toast } from 'react-toastify';
-
+import { ToastContainer } from 'react-toastify';
+import api from '../../services/api';
+import { alertToastWarn, alertToastSuccess, alertToastError } from '../alerts/ToastAlert'
 
 import useLocalStorage from '../hooks/useLocalStorage';
 import './Todo.css';
@@ -13,18 +13,20 @@ export default function Todo() {
   const [value, setValue] = useState("");
   const [filter, setFilter] = useState('all');
 
-  const alertToastSuccess = (message) => {
-    toast.success(message);
+  useEffect(() => {
+    async function fetchData(){
+      try {
+        const response = await api.get('/tasks');
+        setTask(response.data);
+      } catch (error) {
+        alertToastError(error);
+    }
   }
-  const alertToastWarn = (message) => {
-    toast.warn(message);
-  }
-  const alertToastError = (message) => {
-    toast.error(message)
-  }
-  const alertToastInfo = (message) => {
-    toast.info(message)
-  }
+  fetchData();
+  },[task, setTask])
+
+
+  
 
   function clearAll() {
    setTask([])
@@ -44,15 +46,13 @@ export default function Todo() {
   }
 
   // adiciona task ao array de task
-  function handleTask(e) {
+  async function handleTask(e) {
     e.preventDefault();
     const newTask = {
-      id: nextId(),
-      text: value,
-      completed: false
+      task: value,
     }
-    if (newTask.text) {
-      setTask([...task, newTask]);
+    if (newTask.task) {
+      await api.post('/tasks', newTask);
       alertToastSuccess('😀 Task Inserida com sucesso!');
       clearInput();
     } else {
@@ -61,34 +61,43 @@ export default function Todo() {
   }
 
   // deleta a task do array puxando pelo id
-  function deleteTask(id) {
+  async function deleteTask(id) {
     try {
-      let newTask = task.filter(index => index.id === id);
-      if (newTask[0].completed === false) {
-        alertToastWarn("😕 Task não pode ser deleta, ainda não foi finalizada!");
-      } else {
-        setTask(task.filter(index => index.id !== id));
-        alertToastSuccess('😀 Task deletada com sucesso!');
-      }
+      await api.delete(`/tasks/${id}`)
+      alertToastSuccess('😀 Task deletada com sucesso!');
     } catch (error) {
-      alertToastError(error)
+      alertToastError('Internal Error Server"');
     }
+    // try {
+    //   let newTask = task.filter(index => index.id === id);
+    //   if (newTask[0].completed === false) {
+    //     alertToastWarn("😕 Task não pode ser deleta, ainda não foi finalizada!");
+    //   } else {
+    //     setTask(task.filter(index => index.id !== id));
+    //     alertToastSuccess('😀 Task deletada com sucesso!');
+    //   }
+    // } catch (error) {
+    //   alertToastError(error)
+    // }
   }
 
   // adiciona o check ao completed da task
-  function handleChcked(id) {
-    try {
-      const newTask = task.filter(item => item.id === id);
-      newTask[0].completed = !newTask[0].completed;
-      setTask([...task]);
-      if(newTask[0].completed){
-        alertToastSuccess('👍 Task completa!')
-      }else{
-        alertToastInfo('👍 Task Ativada!')
-      }
-    } catch (error) {
-      alertToastError(error)
+  async function handleChcked(id) {
+    const taskId = task.filter(item => item._id === id);
+    if(taskId[0].completed){
+      alertToastWarn("Tarefa finalizada não pode ser reativada");
+      return
     }
+    const newTask = !task.completed;
+    try {
+      await api.patch(`/tasks/${id}`, {
+        completed: newTask
+      })
+      alertToastSuccess("Tarefa completa com sucesso")
+    } catch (error) {
+      alertToastError("Internal Error Server")
+    }
+    
   }
 
   // grava no value o valor digitado do input
@@ -118,18 +127,20 @@ export default function Todo() {
         <div className="itens">
           {
             filteredTodos.map(item => (
-              <li key={item.id}>
+              <li key={item._id}>
                 <input
-                  defaultChecked={item.completed}
                   type="checkbox"
-                  onClick={e => handleChcked(item.id)} />
+                  onChange={e => handleChcked(item._id)}
+                  defaultChecked={false}
+                  checked={item.completed}
+                />
                 <strong
                   onDoubleClick={() => console.log('Clicked')}
                   key={item.id}
                   className={item.completed ? "completed" : ""}>
-                  {item.text}
+                  {item.task}
                 </strong>
-                <button title="deletar" onClick={e => deleteTask(item.id)}>X</button>
+                <button title="deletar" onClick={e => deleteTask(item._id)}>X</button>
               </li>
             ))
           }
