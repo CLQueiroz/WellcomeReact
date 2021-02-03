@@ -63,6 +63,11 @@ export default function Todo() {
   // deleta a task do array puxando pelo id
   async function deleteTask(id) {
     try {
+      let newTask = task.filter(index => index._id === id);
+      if(newTask[0].completed === false){
+        alertToastWarn("😕 Task não pode ser deleta, ainda não foi finalizada!");
+        return;
+      }
       await api.delete(`/tasks/${id}`)
       alertToastSuccess('😀 Task deletada com sucesso!');
     } catch (error) {
