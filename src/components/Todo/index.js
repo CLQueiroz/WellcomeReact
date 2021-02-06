@@ -4,33 +4,34 @@ import { ToastContainer } from 'react-toastify';
 import api from '../../services/api';
 import { alertToastWarn, alertToastSuccess, alertToastError } from '../alerts/ToastAlert'
 
-import useLocalStorage from '../hooks/useLocalStorage';
 import './Todo.css';
 import 'react-toastify/dist/ReactToastify.css';
 export default function Todo() {
 
-  const [task, setTask] = useLocalStorage('Tasks', []);
+  const [task, setTask] = useState([]);
   const [value, setValue] = useState("");
-  const [filter, setFilter] = useState('all');
+  const [filter, setFilter] = useState('all'); 
+  const [reset, setReset] = useState(true);
 
+
+  // Refeito lógica para buscar dados da API
   useEffect(() => {
-    async function fetchData(){
-      try {
-        const response = await api.get('/tasks');
-        setTask(response.data);
-      } catch (error) {
-        alertToastError(error);
-    }
-  }
-  fetchData();
-  },[task, setTask])
+      api
+        .get("/tasks")
+        .then((response) => {
+          setTask(response.data);
+        })
+        .catch((error) => {
+          alertToastError("Ocorreu um erro ao buscar os items");
+        });
+    }, [reset]);
 
-
-  
 
   function clearAll() {
-   setTask([])
+    setTask([])
   }
+
+  // filstrar as tasks para as actions
   const filteredTodos = useMemo(() => {
     if (filter === 'all') {
       return task
@@ -40,6 +41,7 @@ export default function Todo() {
       return task.filter(item => !item.completed)
     }
   }, [task, filter])
+
   // clear input
   function clearInput() {
     setValue('');
@@ -53,6 +55,7 @@ export default function Todo() {
     }
     if (newTask.task) {
       await api.post('/tasks', newTask);
+      setReset(!reset);
       alertToastSuccess('😀 Task Inserida com sucesso!');
       clearInput();
     } else {
@@ -63,33 +66,23 @@ export default function Todo() {
   // deleta a task do array puxando pelo id
   async function deleteTask(id) {
     try {
-      let newTask = task.filter(index => index._id === id);
-      if(newTask[0].completed === false){
+      let newTask = await task.filter(index => index._id === id);
+      if (newTask[0].completed === false) {
         alertToastWarn("😕 Task não pode ser deleta, ainda não foi finalizada!");
         return;
       }
       await api.delete(`/tasks/${id}`)
+      setReset(!reset);
       alertToastSuccess('😀 Task deletada com sucesso!');
     } catch (error) {
       alertToastError('Internal Error Server"');
     }
-    // try {
-    //   let newTask = task.filter(index => index.id === id);
-    //   if (newTask[0].completed === false) {
-    //     alertToastWarn("😕 Task não pode ser deleta, ainda não foi finalizada!");
-    //   } else {
-    //     setTask(task.filter(index => index.id !== id));
-    //     alertToastSuccess('😀 Task deletada com sucesso!');
-    //   }
-    // } catch (error) {
-    //   alertToastError(error)
-    // }
   }
 
   // adiciona o check ao completed da task
   async function handleChcked(id) {
-    const taskId = task.filter(item => item._id === id);
-    if(taskId[0].completed){
+    const taskId = await task.filter(item => item._id === id);
+    if (taskId[0].completed) {
       alertToastWarn("Tarefa finalizada não pode ser reativada");
       return
     }
@@ -98,11 +91,12 @@ export default function Todo() {
       await api.patch(`/tasks/${id}`, {
         completed: newTask
       })
-      alertToastSuccess("Tarefa completa com sucesso")
+      setReset(!reset);
+      alertToastSuccess("Tarefa completa com sucesso");
     } catch (error) {
       alertToastError("Internal Error Server")
     }
-    
+
   }
 
   // grava no value o valor digitado do input
@@ -140,10 +134,9 @@ export default function Todo() {
                   checked={item.completed}
                 />
                 <strong
-                  onDoubleClick={() => console.log('Clicked')}
                   key={item.id}
                   className={item.completed ? "completed" : ""}>
-                  {item.task}
+                    {item.task}
                 </strong>
                 <button title="deletar" onClick={e => deleteTask(item._id)}>X</button>
               </li>
